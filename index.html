@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio La Tinaja - Sistema de Administración</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --secondary: #00a8cc;
+            --accent: #e63946;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --border: #dee2e6;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            background: var(--white);
+            color: var(--primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .brand-text p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            background-color: var(--white);
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-links li:hover, .nav-links li.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: rgba(0, 86, 179, 0.05);
+        }
+
+        /* --- Main Content --- */
+        main {
+            padding: 2rem;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* --- Forms --- */
+        .form-group {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.1);
+        }
+
+        .payment-summary {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            color: #856404;
+        }
+
+        .payment-summary span {
+            font-weight: bold;
+        }
+
+        /* --- Autocomplete --- */
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-top: none;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            border-radius: 0 0 4px 4px;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f1f3f5;
+        }
+
+        .autocomplete-item strong {
+            color: var(--primary);
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary { background-color: var(--primary); color: var(--white); }
+        .btn-primary:hover { background-color: #004494; }
+
+        .btn-secondary { background-color: #6c757d; color: var(--white); }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        .btn-success { background-color: var(--success); color: var(--white); }
+        .btn-success:hover { background-color: #218838; }
+
+        .btn-danger { background-color: var(--accent); color: var(--white); }
+        .btn-danger:hover { background-color: #c92a37; }
+
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+
+        /* --- Tables --- */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        tr:hover { background-color: #f1f3f5; }
+
+        /* --- Cart --- */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .cart-total {
+            margin-top: 1rem;
+            text-align: right;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* --- Toast --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* --- PDF Styles --- */
+        #print-area { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 40px;
+                background: white;
+            }
+            .report-header { text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+            .report-header h1 { color: var(--primary); font-size: 24px; text-transform: uppercase; }
+            .report-header h2 { font-size: 14px; color: #555; font-weight: normal; margin-top: 5px; }
+            .report-section { margin-bottom: 30px; page-break-inside: avoid; }
+            .report-section h3 { background: #eee; padding: 8px; border-left: 5px solid var(--secondary); font-size: 16px; margin-bottom: 10px;}
+            .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .report-table th, .report-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .report-table th { background-color: #f2f2f2; }
+            .report-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; }
+            .report-footer { margin-top: 50px; text-align: center; font-size: 10px; color: #777; }
+            .payment-box { border: 1px dashed #999; padding: 10px; margin-top: 10px; background: #f9f9f9; }
+        }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+        .badge-pending { background-color: #fff3cd; color: #856404; }
+        .badge-delivered { background-color: #d4edda; color: #155724; }
+        .badge-debt { color: var(--accent); font-weight: bold; }
+        .badge-paid { color: var(--success); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="logo-icon">LT</div>
+            <div class="brand-text">
+                <h1>La Tinaja</h1>
+                <p>Laboratorio de Análisis Químicos</p>
+            </div>
+        </div>
+        <div class="user-info">
+            Q.F.B. MIRNA E. PAVÓN HERNÁNDEZ
+        </div>
+    </header>
+
+    <nav>
+        <ul class="nav-links">
+            <li onclick="showSection('new-order')" class="active">Nueva Venta / Pedido</li>
+            <li onclick="showSection('price-list')">Lista de Precios</li>
+            <li onclick="showSection('deliveries')">Entregas Pendientes</li>
+            <li onclick="showSection('daily-cut')">Corte y Ventas</li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 1. Sección Nueva Venta -->
+        <section id="new-order" class="section active">
+            <div class="grid-2">
+                <!-- Formulario Datos -->
+                <div class="card">
+                    <div class="card-header">Datos del Cliente</div>
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label>Nombre del Cliente</label>
+                            <input type="text" id="client-name" required placeholder="Ej. Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Realización (Pedido)</label>
+                            <input type="date" id="order-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Entrega</label>
+                            <input type="date" id="delivery-date" required>
+                        </div>
+                        <div class="form-group" style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid var(--border);">
+                            <label>Abono / Monto Pagado ($)</label>
+                            <input type="number" id="amount-paid" placeholder="0.00" min="0" step="0.50" oninput="updateRemaining()">
+                            <div class="payment-summary" id="payment-summary-text">
+                                Total a pagar: $<span id="total-display">0.00</span><br>
+                                Restante: <span id="remaining-display" class="badge-debt">$0.00</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Buscador y Selección -->
+                <div class="card">
+                    <div class="card-header">Agregar Estudios</div>
+                    <div class="form-group">
+                        <label>Buscar Estudio</label>
+                        <input type="text" id="study-search" placeholder="Escriba para buscar...">
+                        <div id="autocomplete-list" class="autocomplete-results"></div>
+                    </div>
+                    
+                    <div id="cart-items">
+                        <p style="color: #888; text-align: center; font-style: italic;">No hay estudios agregados.</p>
+                    </div>
+
+                    <div class="cart-total">
+                        Total Estudios: $<span id="cart-total">0.00</span>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: right;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="clearCart()">Limpiar</button>
+                        <button type="button" class="btn btn-primary" onclick="finalizeOrder()">Registrar Pedido</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Lista de Precios -->
+        <section id="price-list" class="section">
+            <div class="card">
+                <div class="card-header">
+                    Catálogo de Estudios
+                    <input type="text" id="list-search" placeholder="Buscar en lista..." style="width: 250px; font-size: 0.9rem; padding: 0.5rem;">
+                </div>
+                <div class="table-container">
+                    <table id="prices-table">
+                        <thead>
+                            <tr>
+                                <th>Estudio</th>
+                                <th>Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Entregas Pendientes -->
+        <section id="deliveries" class="section">
+            <div class="card">
+                <div class="card-header">Pedidos Pendientes de Entrega</div>
+                <div class="table-container">
+                    <table id="pending-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Fechas (Pedido/Entrega)</th>
+                                <th>Estudios</th>
+                                <th>Estado Pago</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Corte de Caja -->
+        <section id="daily-cut" class="section">
+            <div class="card">
+                <div class="card-header">
+                    Corte de Caja / Ventas Diarias
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label for="cut-date" style="margin:0;">Fecha:</label>
+                        <input type="date" id="cut-date" style="width: auto; padding: 0.4rem;">
+                        <button class="btn btn-primary btn-sm" onclick="generateReport()">Generar Reporte</button>
+                    </div>
+                </div>
+                
+                <div id="cut-summary" style="margin-bottom: 20px; display: none;">
+                    <h3>Resumen del Día: <span id="cut-total-display" style="color: var(--primary);">$0.00</span></h3>
+                    <p>Total de órdenes: <span id="cut-count-display">0</span></p>
+                </div>
+
+                <div class="table-container">
+                    <table id="sales-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Fechas</th>
+                                <th>Detalle de Estudios (Unitario)</th>
+                                <th>Estado Pago</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast">Acción completada</div>
+
+    <!-- Área de Impresión -->
+    <div id="print-area">
+        <div class="report-header">
+            <h1>Laboratorio La Tinaja</h1>
+            <h2>Q.F.B. MIRNA E. PAVÓN HERNÁNDEZ | CED. PROF. 4332475</h2>
+            <h2>R.F.C. PAHM7309011C3</h2>
+            <h3 style="margin-top: 10px; border: none;">REPORTE DE VENTAS Y CORTE DE CAJA</h3>
+            <p id="report-date-str"></p>
+        </div>
+        <div id="report-content"></div>
+        <div class="report-footer">
+            <p>Generado el <span id="print-gen-date"></span>. Sistema de Administración La Tinaja.</p>
+            <p>Diplomado en Función Renal B.U.A.P.: Folio 125 No. 1761</p>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS ---
+        const studiesDB = [
+            { name: "QUIMICA SANGUINEA (6 ELEM)", price: 280.00 },
+            { name: "QUIMICA SANGUINEA 4 ELEM. (GLUC, UREA, CREATININA, ACIDO URICO)", price: 170.00 },
+            { name: "QUIMICA SANGUINEA (3 ELEM) (GLUCOSA, COLESTEROL, TRIGLICERIDOS)", price: 150.00 },
+            { name: "GLUCOSA", price: 50.00 },
+            { name: "COLESTEROL", price: 50.00 },
+            { name: "TRIGLICERIDOS", price: 50.00 },
+            { name: "BIOMETRIA HEMATICA COMPLETA", price: 170.00 },
+            { name: "REACCIONES FEBRILES", price: 150.00 },
+            { name: "ANTIGENO PROSTATICO ESPECIFICO (Cuantificado)", price: 300.00 },
+            { name: "EXAMEN GENERAL DE ORINA", price: 80.00 },
+            { name: "PRUEBAS FUNCIONALES HEPATICAS (BILIRRUBINAS,TGO,TGP, ALP)", price: 370.00 },
+            { name: "BILIRRUBINAS (BD,BI, BT)", price: 200.00 },
+            { name: "TRANSAMINASAS (TGO Y TGP)", price: 90.00 },
+            { name: "FOSFATASA ALCALINA", price: 80.00 },
+            { name: "HEMOGLOBINA GLICOSILADA", price: 300.00 },
+            { name: "GRUPO Y RH", price: 50.00 },
+            { name: "VIH", price: 250.00 },
+            { name: "VDRL", price: 100.00 },
+            { name: "PRUEBAS DE EMBARAZO", price: 150.00 },
+            { name: "TP Y TPT", price: 180.00 },
+            { name: "DEPURACION DE CREATININA EN ORINA DE 24 HORAS", price: 450.00 },
+            { name: "SARS-COV2 (COVID) ANTIGENO", price: 500.00 },
+            { name: "SARS-COV2 (ANTICUERPOS IgG E IgM)", price: 500.00 },
+            { name: "ANTIDOPING (5 ELEMENTOS)", price: 450.00 },
+            { name: "DENGUE (IgG, IgM, NH1)", price: 350.00 },
+            { name: "CULTIVO (UROCULTIVO / EXUDADOS)", price: 320.00 },
+            { name: "PAPANICOLAOU", price: 550.00 },
+            { name: "PRENATALES (1) (GLUCOSA, BHC, EGO, VIH, VDRL, GPO Y RH)", price: 580.00 },
+            { name: "PRENATALES (2) (QSC, BHC, EGO, VIH., VDRL, GRUPO Y RH)", price: 830.00 },
+            { name: "PREOPERATORIOS (1) (BHC, TP, TPT, GLUCOSA, GPO Y RH)", price: 390.00 },
+            { name: "PREOPERATORIOS (2) (BHC, TP, TPT, QSC, VIH. GRUPO Y RH)", price: 820.00 },
+            { name: "PERFIL TIROIDEO (1) (TSH, T3 y T4 total)", price: 450.00 },
+            { name: "PERFIL TIROIDEO (2) (TSH, T3 total, T3 libr, T4 total, T4 libre)", price: 750.00 },
+            { name: "PERFIL GINECOLOGICO (LH, FSH, ESTROGENOS, PROGESTERONA, PROLACTINA, TESTOSTERONA)", price: 670.00 },
+            { name: "PERFIL HORMONAL (CORTISOL, HGH, PERFIL GINECO, PERFIL TIROIDEO)", price: 950.00 },
+            { name: "PERFIL REUMATICO (FR, ASLO, PCR, VSG, ACIDO URICO)", price: 360.00 },
+            { name: "PERFIL DE LIPIDOS (COLEST. TOTAL, HDL, LDL, VLDL, TRI, I. ATEROGENICO)", price: 380.00 },
+            { name: "FRACCION BETA (PRUEBA DE EMBARAZO CUALITATIVA)", price: 150.00 },
+            { name: "FRACCION BETA (PRUEBA DE EMBARAZO CUANTITATIVA)", price: 250.00 },
+            { name: "COPROLOGICO", price: 230.00 },
+            { name: "COPROPARASITOSCOPICO (3 MUESTRAS)", price: 200.00 },
+            { name: "COPROPARASITOSCOPICO (1 MUESTRA)", price: 80.00 },
+            { name: "BACILOSCOPIA (ESPUTO) 3 MUESTRAS", price: 250.00 },
+            { name: "BACILOSCOPIA (ESPUTO) 1 MUESTRA", price: 90.00 },
+            { name: "CURVA DE TOLERANCIA A LA GLUCOSA (3 MUESTRAS)", price: 430.00 },
+            { name: "GLUCOSA POST PRANDIAL (3 MUESTRAS)", price: 150.00 }
+        ];
+
+        let orders = JSON.parse(localStorage.getItem('labOrders')) || [];
+        let cart = [];
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('order-date').value = today;
+            document.getElementById('delivery-date').value = today;
+            document.getElementById('cut-date').value = today;
+
+            renderPriceList();
+            renderPendingTable();
+        };
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            const index = ['new-order', 'price-list', 'deliveries', 'daily-cut'].indexOf(id);
+            if (index >= 0) document.querySelectorAll('.nav-links li')[index].classList.add('active');
+        }
+
+        // --- SEARCH & AUTOCOMPLETE ---
+        const studyInput = document.getElementById('study-search');
+        const autocompleteList = document.getElementById('autocomplete-list');
+
+        studyInput.addEventListener('input', function() {
+            const val = this.value;
+            autocompleteList.innerHTML = '';
+            if (!val) { autocompleteList.style.display = 'none'; return; }
+
+            const matches = studiesDB.filter(s => s.name.toLowerCase().includes(val.toLowerCase()));
+            
+            if (matches.length > 0) {
+                autocompleteList.style.display = 'block';
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    const regex = new RegExp(`(${val})`, 'gi');
+                    const highlightedName = match.name.replace(regex, '<strong>$1</strong>');
+                    div.innerHTML = `<span>${highlightedName}</span> <span>$${match.price.toFixed(2)}</span>`;
+                    div.addEventListener('click', function() {
+                        addToCart(match);
+                        studyInput.value = '';
+                        autocompleteList.style.display = 'none';
+                    });
+                    autocompleteList.appendChild(div);
+                });
+            } else {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== studyInput) autocompleteList.style.display = 'none';
+        });
+
+        // --- CART & PAYMENT LOGIC ---
+        function addToCart(study) {
+            cart.push({ ...study, cartId: Date.now() });
+            renderCart();
+        }
+
+        function removeFromCart(cartId) {
+            cart = cart.filter(item => item.cartId !== cartId);
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            document.getElementById('client-name').value = '';
+            document.getElementById('amount-paid').value = '';
+            renderCart();
+        }
+
+        function getCartTotal() {
+            return cart.reduce((sum, item) => sum + item.price, 0);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const totalSpan = document.getElementById('cart-total');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">No hay estudios agregados.</p>';
+                totalSpan.textContent = '0.00';
+                updateRemaining(); // Reset payment view
+                return;
+            }
+
+            cart.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <div><div style="font-weight:500;">${item.name}</div></div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="color:var(--primary); font-weight:bold;">$${item.price.toFixed(2)}</span>
+                        <button class="btn btn-danger btn-sm" onclick="removeFromCart(${item.cartId})">×</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            totalSpan.textContent = getCartTotal().toFixed(2);
+            updateRemaining();
+        }
+
+        function updateRemaining() {
+            const total = getCartTotal();
+            const paid = parseFloat(document.getElementById('amount-paid').value) || 0;
+            const remaining = total - paid;
+
+            document.getElementById('total-display').textContent = total.toFixed(2);
+            const remainingSpan = document.getElementById('remaining-display');
+            
+            if (remaining > 0.01) {
+                remainingSpan.textContent = `$${remaining.toFixed(2)} (Pendiente)`;
+                remainingSpan.style.color = '#dc3545';
+            } else if (remaining < -0.01) {
+                remainingSpan.textContent = `-$${Math.abs(remaining).toFixed(2)} (Sobrante)`;
+                remainingSpan.style.color = '#28a745';
+            } else {
+                remainingSpan.textContent = "$0.00 (Pagado)";
+                remainingSpan.style.color = '#28a745';
+            }
+        }
+
+        function finalizeOrder() {
+            const clientName = document.getElementById('client-name').value.trim();
+            const orderDate = document.getElementById('order-date').value;
+            const deliveryDate = document.getElementById('delivery-date').value;
+            
+            if (!clientName || cart.length === 0) {
+                showToast("Por favor complete el nombre y agregue estudios.");
+                return;
+            }
+
+            const total = getCartTotal();
+            const paid = parseFloat(document.getElementById('amount-paid').value) || 0;
+
+            const newOrder = {
+                id: Date.now(),
+                clientName,
+                orderDate,
+                deliveryDate,
+                items: [...cart],
+                total,
+                amountPaid: paid,
+                status: 'pending' // pending | delivered
+            };
+
+            orders.push(newOrder);
+            saveOrders();
+            showToast("Pedido registrado correctamente.");
+            clearCart();
+            renderPendingTable();
+        }
+
+        function saveOrders() {
+            localStorage.setItem('labOrders', JSON.stringify(orders));
+        }
+
+        // --- PRICE LIST ---
+        function renderPriceList() {
+            const tbody = document.querySelector('#prices-table tbody');
+            tbody.innerHTML = '';
+            studiesDB.forEach(study => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${study.name}</td><td>$${study.price.toFixed(2)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('list-search').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#prices-table tbody tr');
+            rows.forEach(row => {
+                row.style.display = row.cells[0].textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+
+        // --- PENDING DELIVERIES ---
+        function renderPendingTable() {
+            const tbody = document.querySelector('#pending-table tbody');
+            tbody.innerHTML = '';
+            const pendingOrders = orders.filter(o => o.status === 'pending');
+
+            if (pendingOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay entregas pendientes.</td></tr>';
+                return;
+            }
+
+            pendingOrders.forEach(order => {
+                const summary = order.items.map(i => i.name).join(', ').substring(0, 40) + '...';
+                const pendingMoney = (order.total - order.amountPaid).toFixed(2);
+                const paymentStatus = pendingMoney > 0 
+                    ? `<span class="badge badge-pending">Debe $${pendingMoney}</span>` 
+                    : `<span class="badge badge-delivered">Pagado</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${order.clientName}</strong></td>
+                    <td>
+                        <small>Pedido: ${formatDate(order.orderDate)}</small><br>
+                        <small>Entrega: ${formatDate(order.deliveryDate)}</small>
+                    </td>
+                    <td><small>${summary}</small><br><small>(${order.items.length} estudios)</small></td>
+                    <td>${paymentStatus}</td>
+                    <td>$${order.total.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="markDelivered(${order.id})">Entregar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})" style="margin-top:5px;">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function markDelivered(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = 'delivered';
+                saveOrders();
+                renderPendingTable();
+                showToast("Estudio marcado como entregado.");
+            }
+        }
+
+        function deleteOrder(id) {
+            if(confirm("¿Estás seguro de eliminar este pedido? Esta acción no se puede deshacer.")) {
+                orders = orders.filter(o => o.id !== id);
+                saveOrders();
+                renderPendingTable();
+                showToast("Pedido eliminado.");
+            }
+        }
+
+        // --- DAILY CUT & PDF ---
+        function generateReport() {
+            const cutDateInput = document.getElementById('cut-date').value;
+            if (!cutDateInput) return;
+
+            const tbody = document.querySelector('#sales-table tbody');
+            tbody.innerHTML = '';
+
+            const daysOrders = orders.filter(o => o.orderDate === cutDateInput);
+            const totalSum = daysOrders.reduce((sum, o) => sum + o.total, 0);
+
+            document.getElementById('cut-summary').style.display = 'block';
+            document.getElementById('cut-total-display').textContent = `$${totalSum.toFixed(2)}`;
+            document.getElementById('cut-count-display').textContent = daysOrders.length;
+
+            if (daysOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay ventas registradas para esta fecha.</td></tr>';
+            } else {
+                daysOrders.forEach(order => {
+                    // Lista individual de estudios
+                    const studiesDetail = order.items.map(i => 
+                        `<div style="font-size:0.85rem; color:#555;">- ${i.name} <span style="float:right; color:#000;">$${i.price.toFixed(2)}</span></div>`
+                    ).join('');
+
+                    // Estado de pago
+                    const pending = (order.total - order.amountPaid).toFixed(2);
+                    let payStatusHtml = '';
+                    if(pending > 0) {
+                        payStatusHtml = `<span class="badge badge-pending">Pendiente $${pending}</span> <small>(Pagado: $${order.amountPaid.toFixed(2)})</small>`;
+                    } else {
+                        payStatusHtml = `<span class="badge badge-delivered">Pagado Completo</span>`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <strong>${order.clientName}</strong>
+                            <br><span class="badge ${order.status === 'pending' ? 'badge-pending' : 'badge-delivered'}">
+                            ${order.status === 'pending' ? 'Pendiente' : 'Entregado'}</span>
+                        </td>
+                        <td>
+                            <small>Realizado: ${formatDate(order.orderDate)}</small><br>
+                            <small>Entrega: ${formatDate(order.deliveryDate)}</small>
+                        </td>
+                        <td>${studiesDetail}</td>
+                        <td>${payStatusHtml}</td>
+                        <td style="font-weight:bold; font-size:1.1em;">$${order.total.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            preparePDF(daysOrders, cutDateInput, totalSum);
+        }
+
+        function preparePDF(dayOrders, dateStr, totalSum) {
+            const container = document.getElementById('report-content');
+            container.innerHTML = '';
+            document.getElementById('report-date-str').textContent = `Fecha de Corte: ${formatDate(dateStr)}`;
+            document.getElementById('print-gen-date').textContent = new Date().toLocaleString();
+
+            if (dayOrders.length === 0) {
+                container.innerHTML = '<p style="text-align:center;">No se registraron operaciones este día.</p>';
+                return;
+            }
+
+            dayOrders.forEach(order => {
+                const section = document.createElement('div');
+                section.className = 'report-section';
+                
+                let itemsHtml = '';
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <tr>
+                            <td style="padding-left: 20px;">- ${item.name}</td>
+                            <td style="text-align:right;">$${item.price.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                const pending = (order.total - order.amountPaid).toFixed(2);
+                const paymentNote = pending > 0 
+                    ? `<strong>Estado:</strong> Incompleto (Faltan $${pending})` 
+                    : `<strong>Estado:</strong> Pagado Completo`;
+
+                section.innerHTML = `
+                    <h3>Cliente: ${order.clientName} (${order.status === 'pending' ? 'Pendiente Entrega' : 'Entregado'})</h3>
+                    <table class="report-table">
+                        <tr>
+                            <td style="width: 50%;"><strong>Fecha de Realización:</strong> ${formatDate(order.orderDate)}</td>
+                            <td style="width: 50%;"><strong>Fecha de Entrega:</strong> ${formatDate(order.deliveryDate)}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="payment-box">
+                        <strong>Resumen Financiero:</strong> Pagado $${order.amountPaid.toFixed(2)} / Total $${order.total.toFixed(2)}. <br>
+                        ${paymentNote}
+                    </div>
+
+                    <table class="report-table" style="margin-top:10px;">
+                        <thead>
+                            <tr>
+                                <th>Descripción del Estudio</th>
+                                <th style="text-align:right; width: 150px;">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsHtml}</tbody>
+                        <tfoot>
+                            <tr>
+                                <td style="text-align:right; font-weight:bold;">Total del Cliente:</td>
+                                <td style="text-align:right; font-weight:bold; border-top: 2px solid #333;">$${order.total.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+                container.appendChild(section);
+            });
+
+            const grandTotalDiv = document.createElement('div');
+            grandTotalDiv.innerHTML = `
+                <div style="border-top: 2px solid var(--primary); margin-top: 20px; padding-top: 20px; text-align: right;">
+                    <h2 style="color: var(--primary);">TOTAL DEL DÍA: $${totalSum.toFixed(2)}</h2>
+                </div>
+            `;
+            container.appendChild(grandTotalDiv);
+        }
+
+        function printPDF() {
+            window.print();
+        }
+
+        function showToast(message) {
+            const x = document.getElementById("toast");
+            x.textContent = message;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+    </script>
+</body>
+</html>
