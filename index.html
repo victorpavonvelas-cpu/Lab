@@ -567,6 +567,7 @@
                                 <th>Detalle de Estudios (Unitario)</th>
                                 <th>Estado Pago</th>
                                 <th>Total</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -865,11 +866,19 @@
             }
         }
 
+        // --- DELETE FUNCTION (Updated for Cut Refresh) ---
         function deleteOrder(id) {
-            if(confirm("¿Estás seguro de eliminar este pedido?")) {
+            if(confirm("¿Estás seguro de eliminar este pedido? Esta acción borrará el registro permanentemente y afectará los totales del corte.")) {
                 orders = orders.filter(o => o.id !== id);
                 saveOrders();
                 renderPendingTable();
+                
+                // Si estamos en la sección de corte, refrescarla también
+                const cutDateInput = document.getElementById('cut-date').value;
+                if(cutDateInput && document.getElementById('daily-cut').classList.contains('active')) {
+                    generateReport();
+                }
+
                 showToast("Pedido eliminado.");
             }
         }
@@ -890,7 +899,7 @@
             document.getElementById('cut-count-display').textContent = daysOrders.length;
 
             if (daysOrders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay ventas registradas para esta fecha.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay ventas registradas para esta fecha.</td></tr>';
             } else {
                 daysOrders.forEach(order => {
                     const studiesDetail = order.items.map(i => 
@@ -919,6 +928,9 @@
                         <td>${studiesDetail}</td>
                         <td>${payStatusHtml}</td>
                         <td style="font-weight:bold; font-size:1.1em;">$${order.total.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})">Eliminar</button>
+                        </td>
                     `;
                     tbody.appendChild(tr);
                 });
