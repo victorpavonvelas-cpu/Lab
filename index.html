@@ -197,10 +197,6 @@
             color: #856404;
         }
 
-        .payment-summary span {
-            font-weight: bold;
-        }
-
         /* --- Autocomplete --- */
         .autocomplete-results {
             position: absolute;
@@ -333,40 +329,91 @@
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-        /* --- PDF Styles --- */
+        /* --- PDF & PRINT STYLES (TICKET FORMAT) --- */
         #print-area { display: none; }
 
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
+            
             #print-area {
                 display: block;
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 40px;
                 background: white;
+                color: black;
             }
-            .report-header { text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-            .report-header h1 { color: var(--primary); font-size: 24px; text-transform: uppercase; }
-            .report-header h2 { font-size: 14px; color: #555; font-weight: normal; margin-top: 5px; }
-            .report-section { margin-bottom: 30px; page-break-inside: avoid; }
-            .report-section h3 { background: #eee; padding: 8px; border-left: 5px solid var(--secondary); font-size: 16px; margin-bottom: 10px;}
-            .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            .report-table th, .report-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            .report-table th { background-color: #f2f2f2; }
-            .report-total { text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; }
-            .report-footer { margin-top: 50px; text-align: center; font-size: 10px; color: #777; }
-            .payment-box { border: 1px dashed #999; padding: 10px; margin-top: 10px; background: #f9f9f9; }
+
+            /* Ticket Individual Styles */
+            .ticket {
+                border: 2px dashed #333;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+                page-break-after: always; /* Clave: Crea página nueva por ticket */
+                max-width: 800px;
+                margin: 0 auto 30px auto;
+            }
+
+            .ticket-header {
+                text-align: center;
+                border-bottom: 2px solid #000;
+                padding-bottom: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .ticket-header h1 { font-size: 24px; text-transform: uppercase; margin-bottom: 5px; }
+            .ticket-header p { margin: 2px 0; font-size: 14px; }
+
+            .ticket-info {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 15px;
+                font-size: 14px;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 10px;
+            }
+
+            .ticket-items {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .ticket-items tr { border-bottom: 1px solid #eee; }
+            .ticket-items td { padding: 8px 5px; font-size: 14px; }
+            .ticket-items td:last-child { text-align: right; font-weight: bold; }
+
+            .ticket-total {
+                text-align: right;
+                border-top: 2px solid #000;
+                padding-top: 10px;
+                margin-top: 10px;
+            }
+
+            .ticket-total h2 { font-size: 24px; color: #000; }
+
+            .ticket-footer {
+                margin-top: 20px;
+                font-size: 12px;
+                text-align: center;
+                color: #555;
+            }
+
+            .status-box {
+                text-align: right;
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
         }
 
-        /* Badges */
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
         .badge-pending { background-color: #fff3cd; color: #856404; }
         .badge-delivered { background-color: #d4edda; color: #155724; }
         .badge-debt { color: var(--accent); font-weight: bold; }
         .badge-paid { color: var(--success); font-weight: bold; }
+
     </style>
 </head>
 <body>
@@ -500,13 +547,15 @@
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <label for="cut-date" style="margin:0;">Fecha:</label>
                         <input type="date" id="cut-date" style="width: auto; padding: 0.4rem;">
-                        <button class="btn btn-primary btn-sm" onclick="generateReport()">Generar Reporte</button>
+                        <button class="btn btn-primary btn-sm" onclick="generateReport()">Consultar</button>
+                        <button class="btn btn-success btn-sm" onclick="window.print()">Descargar PDF</button>
                     </div>
                 </div>
                 
                 <div id="cut-summary" style="margin-bottom: 20px; display: none;">
                     <h3>Resumen del Día: <span id="cut-total-display" style="color: var(--primary);">$0.00</span></h3>
                     <p>Total de órdenes: <span id="cut-count-display">0</span></p>
+                    <small style="color: #666;">Para descargar el reporte detallado en PDF con tickets, haga clic en "Descargar PDF".</small>
                 </div>
 
                 <div class="table-container">
@@ -529,20 +578,9 @@
 
     <div id="toast">Acción completada</div>
 
-    <!-- Área de Impresión -->
+    <!-- Área de Impresión (TICKETS) -->
     <div id="print-area">
-        <div class="report-header">
-            <h1>Laboratorio La Tinaja</h1>
-            <h2>Q.F.B. MIRNA E. PAVÓN HERNÁNDEZ | CED. PROF. 4332475</h2>
-            <h2>R.F.C. PAHM7309011C3</h2>
-            <h3 style="margin-top: 10px; border: none;">REPORTE DE VENTAS Y CORTE DE CAJA</h3>
-            <p id="report-date-str"></p>
-        </div>
-        <div id="report-content"></div>
-        <div class="report-footer">
-            <p>Generado el <span id="print-gen-date"></span>. Sistema de Administración La Tinaja.</p>
-            <p>Diplomado en Función Renal B.U.A.P.: Folio 125 No. 1761</p>
-        </div>
+        <!-- El contenido se genera dinámicamente en JS -->
     </div>
 
     <script>
@@ -682,7 +720,7 @@
             if (cart.length === 0) {
                 container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">No hay estudios agregados.</p>';
                 totalSpan.textContent = '0.00';
-                updateRemaining(); // Reset payment view
+                updateRemaining(); 
                 return;
             }
 
@@ -735,11 +773,14 @@
 
             const total = getCartTotal();
             const paid = parseFloat(document.getElementById('amount-paid').value) || 0;
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             const newOrder = {
                 id: Date.now(),
                 clientName,
                 orderDate,
+                orderTime: timeString, // Guardamos la hora
                 deliveryDate,
                 items: [...cart],
                 total,
@@ -799,7 +840,7 @@
                 tr.innerHTML = `
                     <td><strong>${order.clientName}</strong></td>
                     <td>
-                        <small>Pedido: ${formatDate(order.orderDate)}</small><br>
+                        <small>Pedido: ${formatDate(order.orderDate)} ${order.orderTime}</small><br>
                         <small>Entrega: ${formatDate(order.deliveryDate)}</small>
                     </td>
                     <td><small>${summary}</small><br><small>(${order.items.length} estudios)</small></td>
@@ -825,7 +866,7 @@
         }
 
         function deleteOrder(id) {
-            if(confirm("¿Estás seguro de eliminar este pedido? Esta acción no se puede deshacer.")) {
+            if(confirm("¿Estás seguro de eliminar este pedido?")) {
                 orders = orders.filter(o => o.id !== id);
                 saveOrders();
                 renderPendingTable();
@@ -833,7 +874,7 @@
             }
         }
 
-        // --- DAILY CUT & PDF ---
+        // --- DAILY CUT & TICKET PDF SYSTEM ---
         function generateReport() {
             const cutDateInput = document.getElementById('cut-date').value;
             if (!cutDateInput) return;
@@ -852,12 +893,10 @@
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay ventas registradas para esta fecha.</td></tr>';
             } else {
                 daysOrders.forEach(order => {
-                    // Lista individual de estudios
                     const studiesDetail = order.items.map(i => 
                         `<div style="font-size:0.85rem; color:#555;">- ${i.name} <span style="float:right; color:#000;">$${i.price.toFixed(2)}</span></div>`
                     ).join('');
 
-                    // Estado de pago
                     const pending = (order.total - order.amountPaid).toFixed(2);
                     let payStatusHtml = '';
                     if(pending > 0) {
@@ -874,7 +913,7 @@
                             ${order.status === 'pending' ? 'Pendiente' : 'Entregado'}</span>
                         </td>
                         <td>
-                            <small>Realizado: ${formatDate(order.orderDate)}</small><br>
+                            <small>Realizado: ${formatDate(order.orderDate)} ${order.orderTime}</small><br>
                             <small>Entrega: ${formatDate(order.deliveryDate)}</small>
                         </td>
                         <td>${studiesDetail}</td>
@@ -885,83 +924,89 @@
                 });
             }
 
+            // Preparamos el área de impresión (TICKETS)
             preparePDF(daysOrders, cutDateInput, totalSum);
         }
 
         function preparePDF(dayOrders, dateStr, totalSum) {
-            const container = document.getElementById('report-content');
+            const container = document.getElementById('print-area');
             container.innerHTML = '';
-            document.getElementById('report-date-str').textContent = `Fecha de Corte: ${formatDate(dateStr)}`;
-            document.getElementById('print-gen-date').textContent = new Date().toLocaleString();
 
             if (dayOrders.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">No se registraron operaciones este día.</p>';
+                container.innerHTML = '<div style="text-align:center; padding: 50px;"><h2>No hay ventas para esta fecha</h2></div>';
                 return;
             }
 
-            dayOrders.forEach(order => {
-                const section = document.createElement('div');
-                section.className = 'report-section';
-                
+            // Crear un ticket por cada pedido
+            dayOrders.forEach((order, index) => {
+                const ticketDiv = document.createElement('div');
+                ticketDiv.className = 'ticket';
+
                 let itemsHtml = '';
                 order.items.forEach(item => {
                     itemsHtml += `
                         <tr>
-                            <td style="padding-left: 20px;">- ${item.name}</td>
-                            <td style="text-align:right;">$${item.price.toFixed(2)}</td>
+                            <td>- ${item.name}</td>
+                            <td>$${item.price.toFixed(2)}</td>
                         </tr>
                     `;
                 });
 
                 const pending = (order.total - order.amountPaid).toFixed(2);
-                const paymentNote = pending > 0 
-                    ? `<strong>Estado:</strong> Incompleto (Faltan $${pending})` 
-                    : `<strong>Estado:</strong> Pagado Completo`;
+                const paymentText = pending > 0 
+                    ? `Pagado: $${order.amountPaid.toFixed(2)} <br><strong>Faltante: $${pending}</strong>` 
+                    : `PAGADO COMPLETO`;
 
-                section.innerHTML = `
-                    <h3>Cliente: ${order.clientName} (${order.status === 'pending' ? 'Pendiente Entrega' : 'Entregado'})</h3>
-                    <table class="report-table">
-                        <tr>
-                            <td style="width: 50%;"><strong>Fecha de Realización:</strong> ${formatDate(order.orderDate)}</td>
-                            <td style="width: 50%;"><strong>Fecha de Entrega:</strong> ${formatDate(order.deliveryDate)}</td>
-                        </tr>
-                    </table>
-                    
-                    <div class="payment-box">
-                        <strong>Resumen Financiero:</strong> Pagado $${order.amountPaid.toFixed(2)} / Total $${order.total.toFixed(2)}. <br>
-                        ${paymentNote}
+                ticketDiv.innerHTML = `
+                    <div class="ticket-header">
+                        <h1>Laboratorio La Tinaja</h1>
+                        <p>Q.F.B. MIRNA E. PAVÓN HERNÁNDEZ</p>
+                        <p>CED. PROF. 4332475</p>
                     </div>
 
-                    <table class="report-table" style="margin-top:10px;">
-                        <thead>
-                            <tr>
-                                <th>Descripción del Estudio</th>
-                                <th style="text-align:right; width: 150px;">Importe</th>
-                            </tr>
-                        </thead>
-                        <tbody>${itemsHtml}</tbody>
-                        <tfoot>
-                            <tr>
-                                <td style="text-align:right; font-weight:bold;">Total del Cliente:</td>
-                                <td style="text-align:right; font-weight:bold; border-top: 2px solid #333;">$${order.total.toFixed(2)}</td>
-                            </tr>
-                        </tfoot>
+                    <div class="ticket-info">
+                        <div><strong>Cliente:</strong> ${order.clientName}</div>
+                        <div><strong>Fecha:</strong> ${formatDate(order.orderDate)}</div>
+                        <div><strong>Hora:</strong> ${order.orderTime}</div>
+                        <div><strong>Entrega:</strong> ${formatDate(order.deliveryDate)}</div>
+                    </div>
+
+                    <table class="ticket-items">
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
                     </table>
+
+                    <div class="status-box">
+                        <small>Estado de Pago</small><br>
+                        ${paymentText}
+                    </div>
+
+                    <div class="ticket-total">
+                        <h2>TOTAL: $${order.total.toFixed(2)}</h2>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <p>Diplomado en Función Renal B.U.A.P.: Folio 125 No. 1761</p>
+                        <p>Gracias por su preferencia</p>
+                    </div>
                 `;
-                container.appendChild(section);
+                container.appendChild(ticketDiv);
             });
 
-            const grandTotalDiv = document.createElement('div');
-            grandTotalDiv.innerHTML = `
-                <div style="border-top: 2px solid var(--primary); margin-top: 20px; padding-top: 20px; text-align: right;">
-                    <h2 style="color: var(--primary);">TOTAL DEL DÍA: $${totalSum.toFixed(2)}</h2>
+            // Página de resumen al final (opcional, pero buena práctica para "Corte")
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'ticket';
+            summaryDiv.style.border = "none";
+            summaryDiv.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <h1>RESUMEN DEL DÍA</h1>
+                    <p style="font-size: 18px; margin-top: 20px;">Fecha: ${formatDate(dateStr)}</p>
+                    <h2 style="font-size: 40px; margin: 30px 0;">$${totalSum.toFixed(2)}</h2>
+                    <p>Total de Ventas: ${dayOrders.length}</p>
                 </div>
             `;
-            container.appendChild(grandTotalDiv);
-        }
-
-        function printPDF() {
-            window.print();
+            container.appendChild(summaryDiv);
         }
 
         function showToast(message) {
